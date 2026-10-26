@@ -115,21 +115,18 @@ class Question(models.Model):
         return "Question: " + self.content
 
     def is_get_score(self, selected_ids):
-    """Return True when exactly the correct choices are selected."""
+        """Return True when exactly the correct choices are selected."""
         correct_ids = set(
-        self.choice_set.filter(
-            is_correct=True
-        ).values_list("id", flat=True)
-    )
-
-    selected_for_question = set(
-        self.choice_set.filter(
-            id__in=selected_ids
-        ).values_list("id", flat=True)
-    )
-
-    return bool(correct_ids) and correct_ids == selected_for_question
-
+            self.choice_set.filter(
+                is_correct=True
+            ).values_list("id", flat=True)
+        )
+        selected_for_question = set(
+            self.choice_set.filter(
+                id__in=selected_ids
+            ).values_list("id", flat=True)
+        )
+        return bool(correct_ids) and correct_ids == selected_for_question
 
 # Choice model
 class Choice(models.Model):
