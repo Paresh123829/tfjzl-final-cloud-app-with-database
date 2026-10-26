@@ -116,13 +116,17 @@ def enroll(request, course_id):
 
 # An example method to collect the selected choices from the exam form from the request object
 def extract_answers(request):
-   submitted_anwsers = []
-   for key in request.POST:
-       if key.startswith('choice'):
-           value = request.POST[key]
-           choice_id = int(value)
-           submitted_anwsers.append(choice_id)
-   return submitted_anwsers
+    """Return selected choice IDs from the submitted exam."""
+    selected_ids = []
+
+    for key, value in request.POST.items():
+        if key.startswith("choice_"):
+            try:
+                selected_ids.append(int(value))
+            except (TypeError, ValueError):
+                continue
+
+    return selected_ids
 
 
 # <HINT> Create an exam result view to check if learner passed exam and show their question results and result for each question,
@@ -135,90 +139,63 @@ def extract_answers(request):
 
 
 # Extract the selected choices from the submitted exam form.
-def extract_answers(request):
-    """Return the IDs of choices submitted by the learner."""
-    submitted_answers = []
-
-    for key, value in request.POST.items():
-        if key.startswith("choice_"):
-            try:
-                choice_id = int(value)
-                submitted_answers.append(choice_id)
-            except (TypeError, ValueError):
-                continue
-
-    return submitted_answers
-
-
 # Submit the exam.
+
 @login_required
 def submit(request, course_id):
-    """Save an exam submission and redirect to its result page."""
+    """Save an exam submission and redirect to the result page."""
     if request.method != "POST":
         return HttpResponseRedirect(
-        reverse(
-            "onlinecourse:show_exam_result",
-            args=(course_id, submission.id),
-    )
-)
+            reverse("onlinecourse:course_details", args=(course_id,))
+        )
 
-    course = get_object_or_404(Course, pk=course_id)
-    user = request.user
+        course = get_object_or_404(Course, pk=course_id)
 
     enrollment = get_object_or_404(
         Enrollment,
-        user=user,
+        user=request.user,
         course=course
     )
 
-    submission = Submission.objects.create(
-        enrollment=enrollment
-    )
+    submission = Submission.objects.create(enrollment=enrollment)
 
-    # Extract the selected choices.
     selected_ids = extract_answers(request)
 
-    # Only accept choices belonging to this course.
     selected_choices = Choice.objects.filter(
         question__course=course,
         id__in=selected_ids
     )
 
-    # Associate the selected choices with this submission.
     submission.choices.set(selected_choices)
 
-    # Redirect to the result page.
     return HttpResponseRedirect(
         reverse(
-            "onlinecourse:exam_result",
+            "onlinecourse:show_exam_result",
             args=(course_id, submission.id)
         )
     )
 
 
-# Display and evaluate the exam result.
 @login_required
 def show_exam_result(request, course_id, submission_id):
-    """Evaluate an exam submission and display its result."""
+    """Calculate the exam score and display detailed results."""
     course = get_object_or_404(Course, pk=course_id)
 
     submission = get_object_or_404(
         Submission,
         pk=submission_id,
         enrollment__course=course,
-        enrollment__user=request.user,
+        enrollment__user=request.user
     )
 
     choices = submission.choices.all()
-
     selected_ids = list(
         choices.values_list("id", flat=True)
     )
 
+    questions = course.question_set.all()
     total_score = 0
     possible_score = 0
-
-    questions = course.question_set.all()
 
     for question in questions:
         possible_score += question.grade
@@ -243,5 +220,5 @@ def show_exam_result(request, course_id, submission_id):
     return render(
         request,
         "onlinecourse/exam_result_bootstrap.html",
-        context,
+        context
     )

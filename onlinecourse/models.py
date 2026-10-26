@@ -103,30 +103,34 @@ class Enrollment(models.Model):
 #    choices = models.ManyToManyField(Choice)
 
 # Question model
+# Question model
 class Question(models.Model):
     course = models.ForeignKey(
         Course,
         on_delete=models.CASCADE
     )
-    content = models.CharField(max_length=200)
-    grade = models.IntegerField(default=50)
+    question_text = models.CharField(max_length=200)
+    grade = models.IntegerField(default=100)
 
     def __str__(self):
-        return "Question: " + self.content
+        return "Question: " + self.question_text
 
     def is_get_score(self, selected_ids):
-        """Return True when exactly the correct choices are selected."""
+        """Return True if exactly the correct choices are selected."""
         correct_ids = set(
             self.choice_set.filter(
                 is_correct=True
             ).values_list("id", flat=True)
         )
+
         selected_for_question = set(
             self.choice_set.filter(
                 id__in=selected_ids
             ).values_list("id", flat=True)
         )
+
         return bool(correct_ids) and correct_ids == selected_for_question
+
 
 # Choice model
 class Choice(models.Model):
@@ -134,13 +138,14 @@ class Choice(models.Model):
         Question,
         on_delete=models.CASCADE
     )
-    content = models.CharField(max_length=200)
+    choice_text = models.CharField(max_length=200)
     is_correct = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.content
+        return self.choice_text
 
 
+# Submission model
 class Submission(models.Model):
     enrollment = models.ForeignKey(
         Enrollment,
@@ -149,8 +154,4 @@ class Submission(models.Model):
     choices = models.ManyToManyField(Choice)
 
     def __str__(self):
-        return (
-            f"Submission {self.pk}: "
-            f"{self.enrollment.user.username} - "
-            f"{self.enrollment.course.name}"
-        )
+        return f"Submission: {self.pk}"

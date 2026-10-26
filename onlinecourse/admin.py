@@ -41,7 +41,7 @@ class CourseAdmin(admin.ModelAdmin):
 # Configure the Question administration page.
 class QuestionAdmin(admin.ModelAdmin):
     inlines = [ChoiceInline]
-    list_display = ['content']
+    list_display = ['question_text']
 
 
 # Configure the Lesson administration page.
