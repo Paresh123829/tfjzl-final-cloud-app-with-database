@@ -8,7 +8,7 @@ Question 3 - Screenshot filename
 03-admin-site.png
 
 Question 4 - Course details template
-https://github.com/Paresh123829/tfjzl-final-cloud-app-with-database/blob/main/onlinecourse/templates/onlinecourse/course_detail_bootstrap.html
+https://github.com/Paresh123829/tfjzl-final-cloud-app-with-database/blob/main/onlinecourse/templates/onlinecourse/course_details_bootstrap.html
 
 Question 5 - views.py
 https://github.com/Paresh123829/tfjzl-final-cloud-app-with-database/blob/main/onlinecourse/views.py

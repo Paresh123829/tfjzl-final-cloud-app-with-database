@@ -37,17 +37,17 @@
 
     <div class="container-fluid mt-3">
 
-        {% if grade > 80 %}
+        {% if passed %}
         <div class="alert alert-success">
             <b>Congratulations, {{ user.first_name }}!</b>
             You have passed the exam and completed the course
-            with a score of {{ grade }}/100.
+            with a score of {{ grade }}/{{ possible }}.
         </div>
         {% else %}
         <div class="alert alert-danger">
             <b>Failed.</b>
             Sorry, {{ user.first_name }}!
-            You have failed the exam with a score of {{ grade }}/100.
+            You have failed the exam with a score of {{ grade }}/{{ possible }}.
         </div>
 
         <a class="btn btn-link text-danger"
