@@ -88,8 +88,7 @@ class CourseListView(generic.ListView):
 
 class CourseDetailView(generic.DetailView):
     model = Course
-    template_name = 'onlinecourse/course_detail_bootstrap.html'
-
+    template_name = 'onlinecourse/course_details_bootstrap.html'
 
 def enroll(request, course_id):
     course = get_object_or_404(Course, pk=course_id)
@@ -157,11 +156,11 @@ def submit(request, course_id):
     """Save an exam submission and redirect to its result page."""
     if request.method != "POST":
         return HttpResponseRedirect(
-            reverse(
-                "onlinecourse:course_details",
-                args=(course_id,)
-            )
-        )
+        reverse(
+            "onlinecourse:show_exam_result",
+            args=(course_id, submission.id),
+    )
+)
 
     course = get_object_or_404(Course, pk=course_id)
     user = request.user
@@ -200,53 +199,49 @@ def submit(request, course_id):
 # Display and evaluate the exam result.
 @login_required
 def show_exam_result(request, course_id, submission_id):
-    """Calculate the exam score and render the result template."""
+    """Evaluate an exam submission and display its result."""
     course = get_object_or_404(Course, pk=course_id)
 
     submission = get_object_or_404(
         Submission,
         pk=submission_id,
         enrollment__course=course,
-        enrollment__user=request.user
+        enrollment__user=request.user,
     )
 
     choices = submission.choices.all()
 
+    selected_ids = list(
+        choices.values_list("id", flat=True)
+    )
+
     total_score = 0
+    possible_score = 0
 
     questions = course.question_set.all()
 
     for question in questions:
-        correct_choices = question.choice_set.filter(
-            is_correct=True
-        )
+        possible_score += question.grade
 
-        # Get the choices selected for the current question.
-        selected_choices = choices.filter(
-            question=question
-        )
-
-        correct_ids = set(
-            correct_choices.values_list("id", flat=True)
-        )
-
-        selected_ids = set(
-            selected_choices.values_list("id", flat=True)
-        )
-
-        # Award marks only if all correct choices, and no
-        # incorrect choices, were selected.
-        if correct_ids and correct_ids == selected_ids:
+        if question.is_get_score(selected_ids):
             total_score += question.grade
+
+    passed = (
+        possible_score > 0
+        and total_score / possible_score >= 0.8
+    )
 
     context = {
         "course": course,
         "grade": total_score,
+        "possible": possible_score,
         "choices": choices,
+        "selected_ids": selected_ids,
+        "passed": passed,
     }
 
     return render(
         request,
         "onlinecourse/exam_result_bootstrap.html",
-        context
+        context,
     )

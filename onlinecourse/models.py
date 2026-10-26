@@ -115,17 +115,20 @@ class Question(models.Model):
         return "Question: " + self.content
 
     def is_get_score(self, selected_ids):
-        """Return True if all correct choices are selected."""
-        all_answers = self.choice_set.filter(
+    """Return True when exactly the correct choices are selected."""
+    correct_ids = set(
+        self.choice_set.filter(
             is_correct=True
-        ).count()
+        ).values_list("id", flat=True)
+    )
 
-        selected_correct = self.choice_set.filter(
-            is_correct=True,
+    selected_for_question = set(
+        self.choice_set.filter(
             id__in=selected_ids
-        ).count()
+        ).values_list("id", flat=True)
+    )
 
-        return all_answers == selected_correct
+    return bool(correct_ids) and correct_ids == selected_for_question
 
 
 # Choice model
@@ -141,7 +144,6 @@ class Choice(models.Model):
         return self.content
 
 
-# Submission model
 class Submission(models.Model):
     enrollment = models.ForeignKey(
         Enrollment,
@@ -150,4 +152,8 @@ class Submission(models.Model):
     choices = models.ManyToManyField(Choice)
 
     def __str__(self):
-        return f"Submission {self.id}"
+        return (
+            f"Submission {self.pk}: "
+            f"{self.enrollment.user.username} - "
+            f"{self.enrollment.course.name}"
+        )
