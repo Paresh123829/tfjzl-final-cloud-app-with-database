@@ -143,13 +143,13 @@ def extract_answers(request):
 
 @login_required
 def submit(request, course_id):
-    """Save an exam submission and redirect to the result page."""
+    """Save an exam submission and redirect to its result page."""
     if request.method != "POST":
         return HttpResponseRedirect(
             reverse("onlinecourse:course_details", args=(course_id,))
         )
 
-        course = get_object_or_404(Course, pk=course_id)
+    course = get_object_or_404(Course, pk=course_id)
 
     enrollment = get_object_or_404(
         Enrollment,
