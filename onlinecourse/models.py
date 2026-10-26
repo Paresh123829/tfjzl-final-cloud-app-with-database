@@ -116,7 +116,7 @@ class Question(models.Model):
 
     def is_get_score(self, selected_ids):
     """Return True when exactly the correct choices are selected."""
-    correct_ids = set(
+        correct_ids = set(
         self.choice_set.filter(
             is_correct=True
         ).values_list("id", flat=True)
