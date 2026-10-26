@@ -13,12 +13,25 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+"""myproject URL Configuration."""
+
 from django.contrib import admin
 from django.urls import include, path
 from django.conf.urls.static import static
 from django.conf import settings
+from django.views.generic import RedirectView
 
 urlpatterns = [
+    # Redirect the root URL to the online course application.
+    path(
+        '',
+        RedirectView.as_view(
+            url='/onlinecourse/',
+            permanent=False
+        ),
+        name='home'
+    ),
+
     path('admin/', admin.site.urls),
     path('onlinecourse/', include('onlinecourse.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
